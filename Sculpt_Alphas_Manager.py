@@ -128,36 +128,31 @@ class OpenCategoryFolder(bpy.types.Operator):
         
         return {'FINISHED'}
 
-# ASSIGN SELECTED ALPHA TO SCULPT BRUSH
-class AssignAlphaToBrush(bpy.types.Operator):
-    bl_idname = "texture.assign_alpha_to_brush"
-    bl_label = "Assign Selected Alpha to Sculpt Brush"
-    bl_description = "Assign the selected alpha texture to the sculpt brush"
-    bl_options = {'REGISTER', 'UNDO'}
+# ASSIGN TEXTURE
+def assignTexture(self, context):
 
-    def execute(self, context):
-        lib_path = context.preferences.addons[__name__].preferences.sculpt_alphas_library
-        selected_category_name = bpy.data.scenes["Scene"].category_pointer_prop.Categories
-        selected_alpha = bpy.context.window_manager.items_in_folders
-        texname_no_extension = os.path.splitext(selected_alpha)[0]
+    lib_path = context.preferences.addons[__name__].preferences.sculpt_alphas_library
+    selected_category_name = bpy.data.scenes["Scene"].category_pointer_prop.Categories
+    selected_alpha = bpy.context.window_manager.items_in_folders
+    texname_no_extension = os.path.splitext(selected_alpha)[0]
 
-        if bpy.context.tool_settings.sculpt.brush.texture is not None:
-            sculpt_tex = bpy.context.tool_settings.sculpt.brush.texture
-            bpy.data.textures.remove(sculpt_tex, do_unlink=True, do_id_user=True, do_ui_user=True)
+    if bpy.context.tool_settings.sculpt.brush.texture is not None:
+        sculpt_tex = bpy.context.tool_settings.sculpt.brush.texture
+        bpy.data.textures.remove(sculpt_tex, do_unlink=True, do_id_user=True, do_ui_user=True)
 
-        bpy.ops.image.open(filepath = os.path.join(lib_path, selected_category_name, selected_alpha))
-        image_to_texture = bpy.data.textures.new(texname_no_extension, 'IMAGE')
-        image_to_texture.image = bpy.data.images[selected_alpha]
-        
-        bpy.context.tool_settings.sculpt.brush.texture = bpy.data.textures[texname_no_extension]
+    bpy.data.images.load(os.path.join(lib_path, selected_category_name, selected_alpha), check_existing=True)
+    image_to_texture = bpy.data.textures.new(texname_no_extension, 'IMAGE')
+    image_to_texture.image = bpy.data.images[selected_alpha]
+    
+    bpy.context.tool_settings.sculpt.brush.texture = bpy.data.textures[texname_no_extension]
 
-        return {'FINISHED'}
+    return {'FINISHED'}
 
 # CATEGORY PROPERTY SCENE
 class CategoryPropertyScene(bpy.types.PropertyGroup):
     
     Categories: EnumProperty(items = preview_sub_folders_categories)
-    WindowManager.items_in_folders = EnumProperty(items=preview_items_in_folders)
+    WindowManager.items_in_folders = EnumProperty(items=preview_items_in_folders, update=assignTexture)
 
 #--------------------------------------------------------------------------------------
 # T E X T U R E   P A N E L   E X T E N S I O N
@@ -171,7 +166,6 @@ def sculpt_alphas_categories_prepend(self, context):
     row.operator("open.category_folder", text = "", icon ="FILE_FOLDER")
     col = layout.column(align=True)
     col.template_icon_view(context.window_manager, "items_in_folders", show_labels = True)
-    col.operator("texture.assign_alpha_to_brush", text = "Assign Alpha to Brush", icon ="BRUSH_DATA")
 
 #--------------------------------------------------------------------------------------
 # R E G I S T R Y
@@ -180,7 +174,6 @@ def sculpt_alphas_categories_prepend(self, context):
 classes = (
     SculptAlphasManagerPreferences,
     OpenCategoryFolder,
-    AssignAlphaToBrush,
     CategoryPropertyScene
 )
 
