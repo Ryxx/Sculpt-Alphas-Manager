@@ -27,6 +27,7 @@ bl_info = {
 }
 
 import os
+import sys
 import bpy
 import bpy.utils.previews
 from bpy.types import Operator, Menu, Panel, PropertyGroup, AddonPreferences, Scene, WindowManager, BlendData
@@ -52,7 +53,7 @@ class SculptAlphasManagerPreferences(AddonPreferences):
         col.label(text="FOLDERS SETUP INSTRUCTIONS:")
         col.label(text="Step 1 - Create a main folder that will contain your alpha textures collections and copy paste its location in the 'Library Path' field below.")
         col.label(text="Step 2 - In that main folder, create as many sub-folders as needed and name them as you wish. These will be displayed as Categories.")
-        col.label(text="Step 3 - Fill each sub-folder with you own black and white alpha textures (formats accepted: jpeg, png, tiff). These will be displayed as thumbnails.")
+        col.label(text="Step 3 - Fill each sub-folder with your own black and white alpha textures (formats accepted: jpeg, png, tiff). These will be displayed as thumbnails.")
         col = layout.column(align=True)
         col.label(text="LIBRARY PATH:")
         col.prop(self, "sculpt_alphas_library")
@@ -67,9 +68,9 @@ def preview_sub_folders_categories(self, context):
         
     list_of_category_folders = []
     for folder in os.listdir(lib_path):
-        if os.path.isdir(lib_path + folder):
+        if os.path.isdir(os.path.join(lib_path, folder)):
             list_of_category_folders.append(folder)
-    
+
     return [(name, name, "") for name in list_of_category_folders]
 
 # CATEGORY ITEMS PREVIEWS FUNCTION
@@ -88,8 +89,6 @@ def preview_items_in_folders(self, context):
 
     if directory == pcoll.my_previews_dir:
         return pcoll.my_previews
-
-    print("Scanning directory: %s" % directory)
 
     if directory and os.path.exists(directory):
         image_paths = []
@@ -121,7 +120,11 @@ class OpenCategoryFolder(bpy.types.Operator):
         lib_path = context.preferences.addons[__name__].preferences.sculpt_alphas_library
         selected_category_name = bpy.data.scenes["Scene"].category_pointer_prop.Categories
         
-        os.startfile(os.path.join(lib_path, selected_category_name))
+        if sys.platform == "win32":
+            os.startfile(os.path.join(lib_path, selected_category_name))
+        else:
+            opener = "open" if sys.platform == "darwin" else "xdg-open"
+            subprocess.call([opener, os.path.join(lib_path, selected_category_name)])
         
         return {'FINISHED'}
 
