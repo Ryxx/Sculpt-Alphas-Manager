@@ -113,7 +113,7 @@ def preview_items_in_folders(self, context):
 class OpenCategoryFolder(bpy.types.Operator):
     bl_idname = "open.category_folder"
     bl_label = "Open Category Folder"
-    bl_description = "Open selected category's folder in Windows explorer"
+    bl_description = "Open selected category's folder in OS explorer"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
