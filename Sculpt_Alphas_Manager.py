@@ -136,15 +136,38 @@ def assignTexture(self, context):
     selected_alpha = bpy.context.window_manager.items_in_folders
     texname_no_extension = os.path.splitext(selected_alpha)[0]
 
-    if bpy.context.tool_settings.sculpt.brush.texture is not None:
-        sculpt_tex = bpy.context.tool_settings.sculpt.brush.texture
-        bpy.data.textures.remove(sculpt_tex, do_unlink=True, do_id_user=True, do_ui_user=True)
+    if bpy.context.mode == 'SCULPT':
+        if bpy.context.tool_settings.sculpt.brush.texture is not None:
+            sculpt_tex = bpy.context.tool_settings.sculpt.brush.texture
+            bpy.data.textures.remove(sculpt_tex, do_unlink=True, do_id_user=True, do_ui_user=True)
 
-    bpy.data.images.load(os.path.join(lib_path, selected_category_name, selected_alpha), check_existing=True)
-    image_to_texture = bpy.data.textures.new(texname_no_extension, 'IMAGE')
-    image_to_texture.image = bpy.data.images[selected_alpha]
-    
-    bpy.context.tool_settings.sculpt.brush.texture = bpy.data.textures[texname_no_extension]
+        bpy.data.images.load(os.path.join(lib_path, selected_category_name, selected_alpha), check_existing=True)
+        image_to_texture = bpy.data.textures.new(texname_no_extension, 'IMAGE')
+        image_to_texture.image = bpy.data.images[selected_alpha]
+        
+        bpy.context.tool_settings.sculpt.brush.texture = bpy.data.textures[texname_no_extension]
+
+    if bpy.context.mode == 'PAINT_TEXTURE':
+        if bpy.context.tool_settings.image_paint.brush.texture is not None:
+            paint_tex = bpy.context.tool_settings.image_paint.brush.texture
+            bpy.data.textures.remove(paint_tex, do_unlink=True, do_id_user=True, do_ui_user=True)
+
+        bpy.data.images.load(os.path.join(lib_path, selected_category_name, selected_alpha), check_existing=True)
+        image_to_texture = bpy.data.textures.new(texname_no_extension, 'IMAGE')
+        image_to_texture.image = bpy.data.images[selected_alpha]
+        
+        bpy.context.tool_settings.image_paint.brush.texture = bpy.data.textures[texname_no_extension]
+
+    if bpy.context.mode == 'PAINT_VERTEX':
+        if bpy.context.tool_settings.vertex_paint.brush.texture is not None:
+            vertpaint_tex = bpy.context.tool_settings.vertex_paint.brush.texture
+            bpy.data.textures.remove(vertpaint_tex, do_unlink=True, do_id_user=True, do_ui_user=True)
+
+        bpy.data.images.load(os.path.join(lib_path, selected_category_name, selected_alpha), check_existing=True)
+        image_to_texture = bpy.data.textures.new(texname_no_extension, 'IMAGE')
+        image_to_texture.image = bpy.data.images[selected_alpha]
+        
+        bpy.context.tool_settings.vertex_paint.brush.texture = bpy.data.textures[texname_no_extension]
 
     return {'FINISHED'}
 
